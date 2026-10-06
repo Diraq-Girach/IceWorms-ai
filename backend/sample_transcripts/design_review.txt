@@ -1,0 +1,8 @@
+[00:00:05] Lena Fischer: Thanks for joining the design review. Today we're looking at the new onboarding wizard mockups.
+[00:00:21] Sofia Alvarez: I love the progress bar at the top. It makes the four steps feel much shorter.
+[00:00:40] Alex Carter: Agreed. My only concern is the connection step. Can we show a sample workspace option right there for people without data?
+[00:01:05] Lena Fischer: Good idea. I'll add a "Try with sample data" link under the connector list.
+[00:01:30] Sofia Alvarez: From an engineering side, the OAuth popup is the slow part. It takes about 4 seconds to load on staging.
+[00:01:52] Alex Carter: That's a problem for first impressions. Sofia, could you profile it before Friday?
+[00:02:10] Sofia Alvarez: Yes, I'll profile it and share numbers by Thursday.
+[00:02:31] Lena Fischer: Great, I'll update the mockups and send them to everyone tomorrow.

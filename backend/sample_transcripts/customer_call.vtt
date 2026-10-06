@@ -1,0 +1,19 @@
+WEBVTT
+
+00:00:01.000 --> 00:00:06.500
+<v Rachel Kim>Hi Sam, thanks for hopping on. How has the first month with Northwind been?
+
+00:00:07.000 --> 00:00:14.000
+<v Sam Torres>Honestly it's been great. Our weekly report used to take 6 hours and now it's automatic.
+
+00:00:14.500 --> 00:00:19.000
+<v Sam Torres>The one issue is that the dashboard is slow when we filter by region.
+
+00:00:20.000 --> 00:00:27.000
+<v Rachel Kim>Thanks for flagging that. I'll open a ticket with engineering and follow up by Friday.
+
+00:00:28.000 --> 00:00:34.000
+<v Sam Torres>Also, what would it cost to add 10 more seats next quarter?
+
+00:00:35.000 --> 00:00:42.000
+<v Rachel Kim>It's $45 per seat per month. I'll send you a quote with the volume discount today.

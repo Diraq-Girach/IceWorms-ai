@@ -1,0 +1,7 @@
+[
+  { "speaker": "Marcus Lee", "start": 0, "end": 6, "text": "Quick sync on the churn dashboard. The new cohort chart is live." },
+  { "speaker": "Priya Sharma", "start": 6.5, "end": 13, "text": "Nice. Did the numbers match the finance report?" },
+  { "speaker": "Marcus Lee", "start": 13.5, "end": 22, "text": "Within 2 percent. The small gap is from refunds, which finance counts differently." },
+  { "speaker": "Priya Sharma", "start": 22.5, "end": 30, "text": "Okay. Let's document that difference so nobody gets confused. Can you add a note to the dashboard?" },
+  { "speaker": "Marcus Lee", "start": 30.5, "end": 35, "text": "Sure, I'll add a footnote today." }
+]

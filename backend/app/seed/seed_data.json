@@ -1,0 +1,386 @@
+{
+  "user": { "key": "alex", "name": "Alex Carter", "email": "alex@northwind.io", "avatar_color": "#F97316" },
+  "meetings": [
+    {
+      "title": "Q4 Roadmap Planning – Product & Engineering",
+      "days_ago": 0, "time": "11:00", "duration_min": 42, "platform": "google_meet",
+      "participants": [
+        { "key": "alex", "host": true },
+        { "key": "priya", "name": "Priya Sharma", "email": "priya@northwind.io" },
+        { "key": "lena", "name": "Lena Fischer", "email": "lena@northwind.io" },
+        { "key": "marcus", "name": "Marcus Lee", "email": "marcus@northwind.io" }
+      ],
+      "segments": [
+        [5, "alex", "Morning everyone. Thanks for making time. The goal today is to lock the Q4 roadmap so engineering can start sprint planning on Monday."],
+        [22, "alex", "We have three big bets on the table: the new reporting dashboard, the Slack integration, and the self-serve onboarding flow. We realistically can't ship all three."],
+        [48, "priya", "Agreed. From the engineering side we have about 14 engineer-weeks of capacity once you subtract on-call and the tech debt we promised to pay down."],
+        [71, "marcus", "Before we pick, I pulled the numbers. 38 percent of churned accounts last quarter never finished onboarding. That's the biggest single signal we have."],
+        [96, "lena", "That matches what we saw in usability testing. People get stuck at the data source connection step. Four out of six testers needed help there."],
+        [124, "alex", "So onboarding looks like the clear winner on impact. What does it cost us, Priya?"],
+        [140, "priya", "If we keep the scope to the connection wizard and the sample workspace, I'd estimate six engineer-weeks. The risk is the OAuth work for the two new connectors."],
+        [168, "marcus", "Do we need both connectors in the first release, or can we ship with just the Postgres one?"],
+        [186, "priya", "Postgres alone covers about 70 percent of new signups, so yes, we could split it. That brings it down to roughly four and a half weeks."],
+        [215, "lena", "I love that. I'd rather ship a smooth flow for most people than a half-finished one for everyone."],
+        [402, "alex", "Okay, next item is the reporting dashboard. Marcus, what's the customer pressure looking like?"],
+        [418, "marcus", "It's mostly enterprise. Three of our top ten accounts have asked for scheduled PDF reports, and one renewal in November is explicitly tied to it."],
+        [446, "priya", "The scheduled export part is cheap. The custom chart builder is what makes it expensive. That's easily eight weeks on its own."],
+        [470, "alex", "Then let's do scheduled exports this quarter and push the chart builder to Q1. Does anyone feel strongly otherwise?"],
+        [489, "lena", "No, but I'd like two days to sketch the chart builder now so we aren't designing it from scratch in January."],
+        [512, "alex", "Totally fair. Priya, can you check whether the export service can reuse the existing PDF renderer?"],
+        [528, "priya", "I'll check with Arjun today. I think it can, but the renderer has a memory issue with large tables that we'd need to fix first."],
+        [905, "alex", "Last one, the Slack integration. Honestly, I think this is the one we cut."],
+        [921, "marcus", "I'm a bit worried about that. Sales mentions Slack in almost every competitive deal. Is there a smaller version?"],
+        [944, "priya", "We could ship a simple webhook that posts a summary to a channel. That's maybe one week, no app directory listing, no slash commands."],
+        [969, "alex", "That's a good compromise. Let's put the webhook in as a stretch goal if onboarding comes in on time."],
+        [1500, "lena", "One concern on timelines. Design is also supporting the marketing site refresh in October, so I'm stretched thin."],
+        [1521, "alex", "Understood. I'll talk to Nina about moving the site refresh to November so you can focus on onboarding first."],
+        [2380, "alex", "Great discussion. To recap: onboarding with Postgres first, scheduled exports, and the Slack webhook as a stretch. I'll send the written roadmap by Friday."],
+        [2410, "priya", "Sounds good. I'll have sprint tickets ready for Monday's planning."]
+      ],
+      "summary": {
+        "overview": [
+          { "emoji": "🎯", "title": "Q4 Priority Locked", "text": "Self-serve onboarding is the top Q4 bet, backed by data that 38% of churned accounts never finished onboarding." },
+          { "emoji": "✂️", "title": "Scope Reduction", "text": "Onboarding ships with the Postgres connector only, cutting the estimate from six to about 4.5 engineer-weeks." },
+          { "emoji": "📊", "title": "Reporting Split", "text": "Scheduled PDF exports ship this quarter; the custom chart builder moves to Q1 with early design exploration." },
+          { "emoji": "💬", "title": "Slack as Stretch Goal", "text": "A lightweight Slack webhook replaces the full integration and ships only if onboarding lands on time." },
+          { "emoji": "⚠️", "title": "Design Capacity Risk", "text": "Design is stretched by the marketing site refresh, which Alex will try to move to November." }
+        ],
+        "keywords": ["Onboarding", "Q4 Roadmap", "Scheduled Exports", "Postgres Connector", "Slack Webhook", "Capacity"]
+      },
+      "notes": [
+        { "title": "Self-Serve Onboarding", "start": 22,
+          "summary": "The team agreed onboarding has the highest impact on churn and chose a reduced scope to fit engineering capacity.",
+          "bullets": [
+            ["Marcus shared that 38% of churned accounts never completed onboarding, the strongest churn signal available.", 71],
+            ["Usability testing showed 4 of 6 testers got stuck at the data source connection step.", 96],
+            ["Shipping only the Postgres connector covers ~70% of signups and reduces the estimate to ~4.5 engineer-weeks.", 186]
+          ] },
+        { "title": "Reporting Dashboard", "start": 402,
+          "summary": "Enterprise demand for scheduled reports is high, so exports ship now and the chart builder waits for Q1.",
+          "bullets": [
+            ["Three top-ten accounts requested scheduled PDF reports; one November renewal depends on it.", 418],
+            ["The custom chart builder alone is roughly eight weeks of work and is deferred to Q1.", 446],
+            ["The existing PDF renderer may be reusable but has a memory issue with large tables.", 528]
+          ] },
+        { "title": "Slack Integration & Capacity", "start": 905,
+          "summary": "Instead of cutting Slack entirely, the team scoped a one-week webhook as a stretch goal.",
+          "bullets": [
+            ["Sales mentions Slack in most competitive deals, so dropping it entirely carries risk.", 921],
+            ["A summary-posting webhook takes about one week with no app directory listing.", 944],
+            ["Design capacity is limited in October due to the marketing site refresh.", 1500]
+          ] }
+      ],
+      "action_items": [
+        { "assignee": "alex", "text": "Send the written Q4 roadmap to the team", "start": 2380, "details": ["Include onboarding scope, scheduled exports and the Slack webhook stretch goal", "Note the chart builder deferral to Q1"] },
+        { "assignee": "alex", "text": "Ask Nina to move the marketing site refresh to November", "start": 1521 },
+        { "assignee": "priya", "text": "Check with Arjun whether the export service can reuse the PDF renderer", "start": 512, "details": ["Investigate the memory issue with large tables"] },
+        { "assignee": "priya", "text": "Prepare sprint tickets for Monday's planning", "start": 2410 },
+        { "assignee": "lena", "text": "Spend two days sketching the custom chart builder for Q1", "start": 489 }
+      ]
+    },
+    {
+      "title": "Sales Demo – Acme Corp <> Northwind",
+      "days_ago": 1, "time": "15:30", "duration_min": 36, "platform": "zoom",
+      "participants": [
+        { "key": "jordan", "name": "Jordan Blake", "email": "jordan@northwind.io", "host": true },
+        { "key": "alex" },
+        { "key": "dana", "name": "Dana Whitfield", "email": "dana.whitfield@acmecorp.com" },
+        { "key": "kevin", "name": "Kevin O'Brien", "email": "kevin.obrien@acmecorp.com" }
+      ],
+      "segments": [
+        [4, "jordan", "Hi Dana, hi Kevin, thanks for joining. I've also brought Alex, our head of product, to answer the deeper questions. How's your week going?"],
+        [18, "dana", "Busy, but good. We're in the middle of our annual planning, which is partly why we're looking at tools like yours right now."],
+        [34, "jordan", "Perfect timing then. Could you remind us what prompted the search? I want to make sure the demo focuses on what matters to you."],
+        [52, "dana", "Our operations team spends about 12 hours a week building reports by hand in spreadsheets. It's slow, and the numbers are often wrong by the time leadership sees them."],
+        [78, "kevin", "And from the IT side, we need anything new to support single sign-on and keep data in our own region. That's non-negotiable for us."],
+        [96, "alex", "Both of those are covered. We support SAML SSO with Okta and Azure AD, and enterprise workspaces can pin data to the EU or US region."],
+        [270, "jordan", "Let me share my screen. This is the main dashboard. Everything here refreshes automatically from your connected sources, so nobody has to rebuild the spreadsheet."],
+        [302, "dana", "This is impressive. Can my team set up those scheduled reports themselves, or does it need an admin?"],
+        [318, "alex", "Any editor can schedule them. Admins just control which channels and email domains reports can go to."],
+        [610, "kevin", "What about the integration with our data warehouse? We're on Snowflake. Is that a native connector?"],
+        [628, "alex", "Snowflake is native, yes. It uses key-pair authentication and read-only roles, so you keep full control over what we can see."],
+        [915, "dana", "Okay, let's talk numbers. What would this cost for around 40 users?"],
+        [930, "jordan", "For 40 users on the Business plan it's $45 per seat per month, billed annually, so roughly $21,600 a year. SSO and regional hosting are included at that tier."],
+        [962, "dana", "Honestly, that's more than we budgeted. We were expecting something closer to $15,000."],
+        [981, "jordan", "I understand. If you commit to a two-year term, I can bring it to $38 per seat, and we can include onboarding at no charge."],
+        [1004, "kevin", "My concern is the security review. Last time a vendor review took us three months and delayed the whole project."],
+        [1021, "alex", "We can send our SOC 2 Type II report and a completed security questionnaire up front. That usually cuts the review down to a few weeks."],
+        [1300, "dana", "That would help a lot. Could you also send a case study from a company our size? Leadership will ask for one."],
+        [1316, "jordan", "Absolutely. I'll send the Brightline Health case study, they're about 600 people and had a very similar reporting problem."],
+        [2050, "dana", "Great. If the security review goes smoothly, we'd want to start a pilot by the 15th of next month."],
+        [2072, "jordan", "Perfect. I'll send a proposal with both pricing options and the security pack by Thursday, and let's book a follow-up for next week."]
+      ],
+      "summary": {
+        "overview": [
+          { "emoji": "🧩", "title": "Customer Pain Point", "text": "Acme's operations team spends ~12 hours a week building error-prone spreadsheet reports for leadership." },
+          { "emoji": "🔐", "title": "IT Requirements Met", "text": "SAML SSO and regional data residency were hard requirements; both are supported on the Business plan." },
+          { "emoji": "❄️", "title": "Snowflake Integration", "text": "Acme runs Snowflake, which Northwind supports natively with key-pair auth and read-only roles." },
+          { "emoji": "💰", "title": "Pricing Objection", "text": "Quoted $21,600/year vs. a ~$15,000 budget; a two-year term at $38/seat with free onboarding was offered." },
+          { "emoji": "🗓️", "title": "Pilot Timeline", "text": "Acme wants a pilot by the 15th of next month, contingent on a fast security review." }
+        ],
+        "keywords": ["Pricing", "SSO", "Snowflake", "Security Review", "Pilot", "Scheduled Reports"]
+      },
+      "notes": [
+        { "title": "Discovery & Requirements", "start": 34,
+          "summary": "Acme is replacing manual spreadsheet reporting and has strict IT requirements around SSO and data residency.",
+          "bullets": [
+            ["Dana described ~12 hours per week of manual report building that is often out of date.", 52],
+            ["Kevin requires SSO support and data stored in Acme's own region.", 78],
+            ["Alex confirmed SAML SSO with Okta/Azure AD and EU/US region pinning.", 96]
+          ] },
+        { "title": "Product Demo", "start": 270,
+          "summary": "The demo covered auto-refreshing dashboards, self-serve scheduled reports, and the native Snowflake connector.",
+          "bullets": [
+            ["Any editor can schedule reports; admins control allowed destinations.", 318],
+            ["Snowflake connects natively using key-pair authentication and read-only roles.", 628]
+          ] },
+        { "title": "Pricing & Next Steps", "start": 915,
+          "summary": "Pricing exceeded Acme's budget; a multi-year discount and a security pack were offered to keep the deal moving.",
+          "bullets": [
+            ["Quoted $45/seat/month for 40 users (~$21,600/yr) against a ~$15,000 budget.", 930],
+            ["Two-year term discount to $38/seat with free onboarding was offered.", 981],
+            ["SOC 2 Type II report and a pre-filled security questionnaire will be shared to shorten the review.", 1021]
+          ] }
+      ],
+      "action_items": [
+        { "assignee": "jordan", "text": "Send proposal with 1-year and 2-year pricing options by Thursday", "start": 2072, "details": ["Include $38/seat two-year option with free onboarding", "Attach security pack"] },
+        { "assignee": "jordan", "text": "Share the Brightline Health case study with Dana", "start": 1316 },
+        { "assignee": "jordan", "text": "Book a follow-up call with Acme for next week", "start": 2072 },
+        { "assignee": "alex", "text": "Send SOC 2 Type II report and completed security questionnaire to Kevin", "start": 1021 },
+        { "assignee": "dana", "text": "Confirm internal budget flexibility with leadership", "start": 962 }
+      ]
+    },
+    {
+      "title": "Engineering Standup – Sprint 42",
+      "days_ago": 2, "time": "09:30", "duration_min": 14, "platform": "google_meet",
+      "participants": [
+        { "key": "priya", "host": true },
+        { "key": "alex" },
+        { "key": "arjun", "name": "Arjun Mehta", "email": "arjun@northwind.io" },
+        { "key": "sofia", "name": "Sofia Alvarez", "email": "sofia@northwind.io" },
+        { "key": "tom", "name": "Tom Nguyen", "email": "tom@northwind.io" }
+      ],
+      "segments": [
+        [3, "priya", "Morning all, let's keep it quick. Arjun, do you want to start?"],
+        [10, "arjun", "Sure. Yesterday I finished the retry logic for the sync workers. Today I'm moving on to the PDF renderer memory issue. No blockers."],
+        [32, "priya", "Nice. How bad is the memory issue?"],
+        [38, "arjun", "Tables over about 5,000 rows push the renderer past 2 gigabytes. I think we're loading the whole dataset instead of streaming it. Should be a two-day fix."],
+        [64, "sofia", "I'm still on the onboarding wizard. The connection step UI is done, but I'm blocked on the OAuth callback because the staging redirect URL isn't whitelisted."],
+        [88, "priya", "Who owns the staging OAuth config?"],
+        [94, "tom", "That's me. Sorry, I missed the ticket. I'll add the redirect URL right after standup, it's a five minute change."],
+        [110, "sofia", "Great, thanks Tom. Once that's in I should finish the wizard by Thursday."],
+        [128, "tom", "From my side, the CI pipeline is down to 9 minutes from 14 after caching the dependency layer. Today I'm looking at the flaky end to end test on the billing page."],
+        [156, "alex", "Quick product question. Sofia, does the wizard include the sample workspace option, or is that a separate ticket?"],
+        [170, "sofia", "Separate ticket. I can pick it up next, but it probably won't land before Friday's demo."],
+        [186, "alex", "That's fine, let's demo the connection flow alone on Friday and show the sample workspace next week."],
+        [205, "priya", "One more thing, the production error rate went up to 1.2 percent last night after the deploy. Arjun, can you take a quick look?"],
+        [222, "arjun", "Yes, I saw that. It looks like timeouts from the new connector health check. I'll raise the timeout and add an alert."],
+        [246, "priya", "Thanks. That's it, have a great day everyone."]
+      ],
+      "summary": {
+        "overview": [
+          { "emoji": "🔁", "title": "Sync Worker Retries", "text": "Arjun shipped retry logic for sync workers and is now fixing the PDF renderer's memory issue." },
+          { "emoji": "🚧", "title": "OAuth Blocker", "text": "Sofia's onboarding wizard was blocked by a missing staging redirect URL, which Tom is fixing immediately." },
+          { "emoji": "⚡", "title": "Faster CI", "text": "CI time dropped from 14 to 9 minutes after caching the dependency layer." },
+          { "emoji": "📉", "title": "Error Rate Spike", "text": "Production errors rose to 1.2% after the last deploy due to connector health-check timeouts." }
+        ],
+        "keywords": ["OAuth", "PDF Renderer", "Onboarding Wizard", "CI Pipeline", "Error Rate"]
+      },
+      "notes": [
+        { "title": "Progress Updates", "start": 10,
+          "summary": "Engineering made steady progress on sync reliability, onboarding, and build speed.",
+          "bullets": [
+            ["Renderer memory exceeds 2 GB on tables over ~5,000 rows; fix is to stream data instead of loading it all.", 38],
+            ["CI pipeline time reduced from 14 to 9 minutes via dependency-layer caching.", 128]
+          ] },
+        { "title": "Blockers & Incidents", "start": 64,
+          "summary": "One configuration blocker and one production regression were identified and assigned.",
+          "bullets": [
+            ["Staging OAuth redirect URL was not whitelisted, blocking the onboarding wizard.", 64],
+            ["Production error rate rose to 1.2% due to timeouts in the new connector health check.", 205],
+            ["Friday's demo will show only the connection flow; the sample workspace follows next week.", 186]
+          ] }
+      ],
+      "action_items": [
+        { "assignee": "tom", "text": "Whitelist the staging OAuth redirect URL", "start": 94, "done": true },
+        { "assignee": "arjun", "text": "Fix PDF renderer memory usage by streaming large tables", "start": 38 },
+        { "assignee": "arjun", "text": "Raise connector health-check timeout and add an error-rate alert", "start": 222 },
+        { "assignee": "sofia", "text": "Finish the onboarding connection wizard by Thursday", "start": 110 },
+        { "assignee": "tom", "text": "Investigate the flaky end-to-end test on the billing page", "start": 128 }
+      ]
+    },
+    {
+      "title": "Interview – Senior Frontend Engineer (Maya Chen)",
+      "days_ago": 4, "time": "14:00", "duration_min": 45, "platform": "google_meet",
+      "participants": [
+        { "key": "alex", "host": true },
+        { "key": "priya" },
+        { "key": "maya", "name": "Maya Chen", "email": "maya.chen@gmail.com" }
+      ],
+      "segments": [
+        [6, "alex", "Hi Maya, thanks for joining us. I'm Alex, I lead product, and Priya here leads engineering. We'll spend most of the time on your experience and a short design discussion."],
+        [24, "maya", "Thanks for having me. I'm excited, I've actually used Northwind at my last company."],
+        [36, "priya", "Oh nice! Could you walk us through your current role and the project you're most proud of?"],
+        [48, "maya", "I'm a senior engineer at a fintech startup. The project I'm proudest of is rebuilding our transaction table. We went from rendering 500 rows with lag to 100,000 rows smoothly using virtualization."],
+        [82, "priya", "How did you measure that it was actually better for users?"],
+        [94, "maya", "We tracked interaction latency in production. The 95th percentile went from about 400 milliseconds to under 50. Support tickets about the page being slow dropped to almost zero."],
+        [600, "alex", "Let's do a design question. How would you build a transcript viewer where clicking a line seeks a video, and the active line highlights while it plays?"],
+        [622, "maya", "I'd keep the current time in one piece of state owned by the page. The player updates it on time updates, and each transcript line just checks whether it's active. Clicking a line calls a seek function that the player exposes."],
+        [660, "priya", "What happens with a two hour meeting and thousands of lines?"],
+        [672, "maya", "Then I'd virtualize the list and find the active line with a binary search on start times, so we're not checking every line on each tick. I'd also throttle auto-scroll so users can scroll freely."],
+        [705, "alex", "Good answer. How do you handle disagreement with a product manager on scope?"],
+        [718, "maya", "I try to bring data. Once a PM wanted a feature in two weeks that I thought needed five. I split it into a smaller first version we could ship in two, and that's what we did."],
+        [1800, "maya", "What would my first 90 days look like?"],
+        [1810, "priya", "You'd join the onboarding squad. First month is shipping small fixes, then owning the sample workspace feature end to end."],
+        [2400, "alex", "We're nearly out of time. Any concerns on your side about the role?"],
+        [2412, "maya", "Only the timeline. I have another offer that expires next Friday, so I'd love to hear back before then."],
+        [2430, "alex", "Understood, that's helpful to know. We'll get back to you by Wednesday."]
+      ],
+      "summary": {
+        "overview": [
+          { "emoji": "👩‍💻", "title": "Strong Performance Background", "text": "Maya rebuilt a transaction table to render 100,000 rows smoothly, cutting p95 latency from ~400ms to under 50ms." },
+          { "emoji": "🧠", "title": "System Design", "text": "Proposed a single current-time state, binary search for the active line, and list virtualization for long transcripts." },
+          { "emoji": "🤝", "title": "Collaboration Style", "text": "Handles scope disagreements with data and by proposing smaller first versions." },
+          { "emoji": "⏰", "title": "Competing Offer", "text": "Maya has another offer expiring next Friday; the team committed to a decision by Wednesday." }
+        ],
+        "keywords": ["Virtualization", "Performance", "System Design", "Transcript Viewer", "Hiring"]
+      },
+      "notes": [
+        { "title": "Experience", "start": 36,
+          "summary": "Maya demonstrated deep frontend performance experience with measurable user impact.",
+          "bullets": [
+            ["Rebuilt a transaction table from 500 laggy rows to 100,000 smooth rows using virtualization.", 48],
+            ["Measured success via production p95 latency (400ms → <50ms) and reduced support tickets.", 94]
+          ] },
+        { "title": "Design Discussion", "start": 600,
+          "summary": "A transcript-viewer design question tested state management and performance thinking.",
+          "bullets": [
+            ["Single page-level current time; player updates it, lines derive active state.", 622],
+            ["For long meetings: virtualization, binary search on start times, throttled auto-scroll.", 672],
+            ["Resolves PM disagreements by splitting scope into a smaller shippable version.", 718]
+          ] }
+      ],
+      "action_items": [
+        { "assignee": "alex", "text": "Send interview decision to Maya by Wednesday", "start": 2430 },
+        { "assignee": "priya", "text": "Submit written interview scorecard", "start": 1810 },
+        { "assignee": "alex", "text": "Check references before the competing offer deadline", "start": 2412, "details": ["Maya's other offer expires next Friday"] }
+      ]
+    },
+    {
+      "title": "Customer Onboarding – Brightline Health",
+      "days_ago": 8, "time": "16:00", "duration_min": 31, "platform": "teams",
+      "participants": [
+        { "key": "rachel", "name": "Rachel Kim", "email": "rachel@northwind.io", "host": true },
+        { "key": "alex" },
+        { "key": "omar", "name": "Omar Haddad", "email": "o.haddad@brightlinehealth.org" }
+      ],
+      "segments": [
+        [5, "rachel", "Hi Omar, welcome to Northwind! Today we'll get your first data source connected and set up your first dashboard."],
+        [17, "omar", "Thanks Rachel. We're excited. The board has been asking for a weekly patient-volume report and right now it takes my analyst two days."],
+        [35, "rachel", "Let's fix that. Which source holds the patient volume data?"],
+        [44, "omar", "It's in our Postgres reporting replica. Our IT team already created a read-only user for you."],
+        [60, "rachel", "Perfect. Go to Sources, choose Postgres, and paste the host and the read-only credentials. I'll stay on the line."],
+        [180, "omar", "Hmm, it says connection refused. Is that on our side?"],
+        [192, "alex", "That's usually the firewall. You'll need to allow our two static IP addresses. I'll paste them in the chat now."],
+        [215, "omar", "Okay, I've asked IT to whitelist them. They say it'll take about ten minutes."],
+        [700, "omar", "It's connected now. Great, I can see all the tables."],
+        [712, "rachel", "Awesome. Let's build the patient-volume chart. Pick the visits table, group by week, and count distinct patient IDs."],
+        [760, "omar", "That's exactly the number the board wants. This would have taken us two days. Can I schedule it every Monday morning?"],
+        [778, "rachel", "Yes, click Schedule, choose weekly on Monday at 8 AM, and add the board distribution list."],
+        [1200, "omar", "One concern: some of this data is sensitive. Can I make sure only aggregated numbers go out by email?"],
+        [1220, "alex", "Yes. Scheduled emails only include the chart image and totals. Row-level data never leaves the workspace, and we can also turn on PII masking for your account."],
+        [1250, "omar", "Please do turn on masking. Our compliance team will ask about it."],
+        [1800, "rachel", "We'll check in again in two weeks to see how the first reports landed. Any final questions?"],
+        [1812, "omar", "No, this was really helpful. Thank you both."]
+      ],
+      "summary": {
+        "overview": [
+          { "emoji": "🏥", "title": "Board Reporting Goal", "text": "Brightline needs a weekly patient-volume report that currently takes an analyst two days to build." },
+          { "emoji": "🔌", "title": "Postgres Connected", "text": "After whitelisting Northwind's static IPs, the read-only Postgres replica connected successfully." },
+          { "emoji": "📅", "title": "Weekly Schedule", "text": "A patient-volume chart was built and scheduled for Mondays at 8 AM to the board list." },
+          { "emoji": "🛡️", "title": "Data Privacy", "text": "Only aggregates go out by email, and PII masking will be enabled for compliance." }
+        ],
+        "keywords": ["Onboarding", "Postgres", "Firewall", "Scheduled Reports", "PII Masking"]
+      },
+      "notes": [
+        { "title": "Data Source Setup", "start": 35,
+          "summary": "The Postgres reporting replica was connected after resolving a firewall issue.",
+          "bullets": [
+            ["IT pre-created a read-only database user for Northwind.", 44],
+            ["Initial connection was refused due to the firewall; static IPs were whitelisted.", 192],
+            ["Connection succeeded and all tables became visible.", 700]
+          ] },
+        { "title": "First Dashboard & Compliance", "start": 712,
+          "summary": "The first board report was built and scheduled, with privacy controls requested.",
+          "bullets": [
+            ["Weekly distinct-patient count built from the visits table.", 712],
+            ["Scheduled every Monday at 8 AM to the board distribution list.", 778],
+            ["PII masking requested so only aggregated numbers are emailed.", 1250]
+          ] }
+      ],
+      "action_items": [
+        { "assignee": "alex", "text": "Enable PII masking on Brightline's workspace", "start": 1250, "done": true },
+        { "assignee": "rachel", "text": "Schedule a two-week check-in with Omar", "start": 1800 },
+        { "assignee": "omar", "text": "Share PII masking details with the compliance team", "start": 1250 }
+      ]
+    },
+    {
+      "title": "Spring Launch Campaign Retro",
+      "days_ago": 15, "time": "12:00", "duration_min": 28, "platform": "google_meet",
+      "participants": [
+        { "key": "nina", "name": "Nina Patel", "email": "nina@northwind.io", "host": true },
+        { "key": "alex" },
+        { "key": "lena" },
+        { "key": "jordan" }
+      ],
+      "segments": [
+        [4, "nina", "Okay, let's do the retro for the spring launch. I'll start with the numbers, then we go through what worked and what didn't."],
+        [18, "nina", "We got 4,200 signups in the first two weeks, which is 30 percent above target. Trial-to-paid conversion was 11 percent, slightly below our 13 percent goal."],
+        [46, "jordan", "Sales felt the bump too. We booked 18 demos from launch traffic, which is about double a normal month."],
+        [64, "lena", "The launch video did really well. Average watch time was over 70 percent, which is great for a two minute video."],
+        [300, "nina", "What didn't go well?"],
+        [306, "jordan", "The pricing page. Several prospects told me they were confused about what was included in each plan."],
+        [326, "lena", "Agreed. We changed the plan names a week before launch and the comparison table didn't fully update. That was a mistake on our side."],
+        [348, "alex", "Also the onboarding emails went out late. The first email was delayed by two days because of a template bug."],
+        [370, "nina", "That probably hurt conversion. Can we make sure that's tested before the next launch?"],
+        [600, "nina", "Okay, ideas for next time?"],
+        [606, "lena", "A launch checklist with a final review of the pricing page 48 hours before go-live."],
+        [622, "jordan", "And a short FAQ about plan differences that sales can send to prospects."],
+        [640, "alex", "I'd like us to A/B test the pricing page layout over the next month. We have enough traffic now."],
+        [1600, "nina", "Great. I'll compile everything into a retro doc and share it by Monday."]
+      ],
+      "summary": {
+        "overview": [
+          { "emoji": "🚀", "title": "Launch Results", "text": "4,200 signups in two weeks (30% above target) and 18 demos booked, about double a normal month." },
+          { "emoji": "📉", "title": "Conversion Gap", "text": "Trial-to-paid conversion reached 11%, short of the 13% goal." },
+          { "emoji": "🧾", "title": "Pricing Page Confusion", "text": "Late plan renames left the comparison table outdated and confused prospects." },
+          { "emoji": "📧", "title": "Delayed Emails", "text": "A template bug delayed the first onboarding email by two days." },
+          { "emoji": "✅", "title": "Next-Launch Improvements", "text": "Launch checklist, sales plan FAQ, and a pricing page A/B test were agreed." }
+        ],
+        "keywords": ["Launch", "Signups", "Conversion", "Pricing Page", "A/B Test"]
+      },
+      "notes": [
+        { "title": "Results", "start": 18,
+          "summary": "The launch beat signup targets but slightly missed conversion goals.",
+          "bullets": [
+            ["4,200 signups in two weeks, 30% above target; conversion 11% vs 13% goal.", 18],
+            ["18 demos booked from launch traffic.", 46],
+            ["Launch video averaged over 70% watch time.", 64]
+          ] },
+        { "title": "Issues & Improvements", "start": 300,
+          "summary": "Pricing clarity and email reliability were the main problems, with concrete fixes agreed.",
+          "bullets": [
+            ["Pricing comparison table was outdated after late plan renames.", 326],
+            ["Onboarding email delayed two days by a template bug.", 348],
+            ["Next time: launch checklist, pricing FAQ for sales, and pricing page A/B test.", 606]
+          ] }
+      ],
+      "action_items": [
+        { "assignee": "nina", "text": "Compile and share the retro doc by Monday", "start": 1600, "done": true },
+        { "assignee": "lena", "text": "Create a launch checklist with a 48-hour pricing page review", "start": 606, "done": true },
+        { "assignee": "jordan", "text": "Write a plan-differences FAQ for sales", "start": 622 },
+        { "assignee": "alex", "text": "Set up a pricing page A/B test for next month", "start": 640 }
+      ]
+    }
+  ]
+}

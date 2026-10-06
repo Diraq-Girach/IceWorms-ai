@@ -1,0 +1,48 @@
+/*
+ * App-wide styles that sit on top of Tailwind/shadcn. Plain CSS (unlayered),
+ * so these rules win over Tailwind's base layer.
+ */
+
+/* Inter (loaded in layout.tsx) instead of the preset's Geist — closer to Fireflies */
+html,
+body {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Thin, quiet scrollbars like the original app */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 35%, transparent) transparent;
+}
+
+/* Search-match highlight in the transcript */
+mark.transcript-match {
+  background: var(--highlight);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+mark.transcript-match[data-current="true"] {
+  outline: 2px solid var(--primary);
+}
+
+/* Home banner: soft sky gradient behind "Good afternoon, …" */
+.home-banner {
+  background:
+    radial-gradient(1200px 300px at 20% -40%, #fde68a55, transparent 60%),
+    radial-gradient(900px 300px at 80% -30%, #93c5fd66, transparent 60%),
+    linear-gradient(180deg, #dbeafe 0%, #eef2ff 45%, var(--background) 100%);
+}
+.dark .home-banner {
+  background:
+    radial-gradient(900px 300px at 80% -30%, #4c1d9566, transparent 60%),
+    linear-gradient(180deg, #1e1b4b 0%, var(--background) 100%);
+}
+
+/* Video placeholder backdrop */
+.player-backdrop {
+  background:
+    radial-gradient(600px 300px at 30% 20%, #6d3bea55, transparent 70%),
+    radial-gradient(500px 300px at 80% 90%, #e8439355, transparent 70%),
+    #0f1020;
+}

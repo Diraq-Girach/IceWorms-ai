@@ -1,0 +1,212 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}/*
+ * Fireflies-style design tokens (light + dark), sampled from the 2026 UI screenshots.
+ * Paste into src/app/globals.css AFTER `npx shadcn init` — it overrides shadcn's
+ * default variables so every shadcn component picks up the Fireflies look.
+ * Dark mode: next-themes adds `.dark` on <html>.
+ */
+:root {
+  --radius: 0.5rem;
+
+  --background: #ffffff;
+  --foreground: #1f2330;
+  --card: #ffffff;
+  --card-foreground: #1f2330;
+  --popover: #ffffff;
+  --popover-foreground: #1f2330;
+
+  --primary: #6d3bea;            /* Capture button / play button purple */
+  --primary-foreground: #ffffff;
+  --secondary: #f3f0fe;          /* "Invite" pill, selected sidebar item bg */
+  --secondary-foreground: #5b2fd1;
+  --muted: #f7f7f9;              /* list hover, chips */
+  --muted-foreground: #6b7280;   /* meta text: date · time · duration */
+  --accent: #f3f0fe;
+  --accent-foreground: #5b2fd1;
+  --destructive: #e5484d;
+  --border: #eceef2;
+  --input: #e4e6eb;
+  --ring: #6d3bea;
+
+  --sidebar: #fafafb;
+  --sidebar-foreground: #3b3f4c;
+  --sidebar-accent: #f1edfd;     /* active nav item */
+  --sidebar-accent-foreground: #5b2fd1;
+  --sidebar-border: #eceef2;
+
+  /* app-specific */
+  --timestamp: #3b5bdb;          /* (05:28) links in notes + transcript */
+  --transcript-active: #d6336c;  /* currently-playing words (pink) */
+  --highlight: #fff3bf;          /* <mark> search matches */
+  --success: #22c55e;            /* "Completed" status dot */
+  --brand-gradient: linear-gradient(135deg, #e84393 0%, #6d3bea 100%); /* Get AI Credits button */
+}
+
+.dark {
+  --background: #111218;
+  --foreground: #e7e8ee;
+  --card: #181a22;
+  --card-foreground: #e7e8ee;
+  --popover: #1c1e27;
+  --popover-foreground: #e7e8ee;
+
+  --primary: #8b5cf6;
+  --primary-foreground: #ffffff;
+  --secondary: #262338;
+  --secondary-foreground: #c4b5fd;
+  --muted: #1e2029;
+  --muted-foreground: #9396a5;
+  --accent: #262338;
+  --accent-foreground: #c4b5fd;
+  --destructive: #f2555a;
+  --border: #2a2c37;
+  --input: #2f3240;
+  --ring: #8b5cf6;
+
+  --sidebar: #15161d;
+  --sidebar-foreground: #c9cbd6;
+  --sidebar-accent: #262338;
+  --sidebar-accent-foreground: #c4b5fd;
+  --sidebar-border: #2a2c37;
+
+  --timestamp: #7c9cff;
+  --transcript-active: #f06595;
+  --highlight: #5c4a00;
+  --success: #4ade80;
+}
+
+/* Expose the app-specific tokens as Tailwind v4 utilities: text-timestamp, bg-highlight, ... */
+@theme inline {
+  --color-timestamp: var(--timestamp);
+  --color-transcript-active: var(--transcript-active);
+  --color-highlight: var(--highlight);
+  --color-success: var(--success);
+}
