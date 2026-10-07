@@ -1,322 +1,344 @@
-# IceWorms.ai — Meeting Notes & Transcription Platform
+# IceWorms.ai
 
-IceWorms.ai is a functional clone of the Fireflies.ai meeting workspace, built for the SDE Fullstack assignment: a meetings library, interactive
-transcripts with click-to-seek, AI summaries / notes / action items, per-meeting "Ask AI",
-transcript upload, and full CRUD. Speech-to-text is out of scope (you upload or paste transcripts).
-Notes are written by an **LLM** when one is configured (any OpenAI-compatible provider, e.g. Groq or
-Gemini on their free tiers), with a **rule-based summarizer** as the fallback, so the app works
-fully without an API key.
+**A Fireflies.ai-style meeting workspace**: browse meetings, follow interactive transcripts synced to a player, read AI summaries and action items, and ask questions about any meeting.
+
+Built for the Scaler SDE Fullstack assignment (*Fireflies.ai clone*) with **Next.js**, **FastAPI** and **SQLite**.
 
 | | |
 |---|---|
-| **Frontend** | Next.js (App Router, TypeScript), Tailwind CSS, shadcn/ui, next-themes, sonner |
-| **Backend** | Python 3.12, FastAPI, SQLModel (SQLAlchemy + Pydantic), httpx |
-| **AI (optional)** | Any OpenAI-compatible chat API, configured with 3 environment variables |
-| **Database** | SQLite (file on a Railway volume in production) |
-| **Hosting** | Frontend → Vercel · Backend → Railway |
+| 🌐 **Live app** | https://ice-worms-ai.vercel.app |
+| 📘 **API docs** (Swagger) | https://iceworms-ai-production.up.railway.app/docs |
+| 💻 **Source** | https://github.com/Diraq-Girach/IceWorms-ai |
+
+![Meeting page: player, AI summary and synced transcript](docs/screenshots/meeting.png)
 
 ---
 
-## 1. Local setup
+## Contents
+- [Try it in 2 minutes](#try-it-in-2-minutes)
+- [Feature checklist](#feature-checklist)
+- [Screenshots](#screenshots)
+- [Tech stack](#tech-stack)
+- [Architecture overview](#architecture-overview)
+- [Database schema](#database-schema)
+- [API overview](#api-overview)
+- [Running locally](#running-locally)
+- [Deployment](#deployment)
+- [Assumptions & scope](#assumptions--scope)
 
-### Prerequisites
-Python 3.11+ · Node.js 20+ · Git
+---
 
-### Backend (≈2 min)
+## Try it in 2 minutes
+
+The live app is seeded with six realistic meetings (a sales demo, a roadmap planning session, a standup, an interview, a customer onboarding and a retro).
+
+1. **Meetings library:** search titles, switch to *Titles + transcripts* and search `snowflake`, or use **Filters** to filter by participant or date.
+2. **Open "Sales Demo – Acme Corp <> Northwind".**
+   - Click any transcript line: the player jumps there and the line highlights.
+   - Press ▶ (try 2×): the highlight follows playback and the transcript auto-scrolls.
+   - Click any blue timestamp in the **Notes** or **Action items** to seek.
+3. **Search inside the transcript:** type `pricing` in *Find in transcript* and step through the highlighted matches.
+4. **Smart Search** (sliders icon): filter lines by AI category (questions, pricing…), sentiment or speaker, and see talk-time per speaker.
+5. **Ask AI** tab: ask *"What objections came up?"* The answer cites moments like `[15:30]`; click one to jump there.
+6. **Generate with AI:** rewrites the summary, notes and action items from the transcript with an LLM.
+7. **Action items:** add one, tick it, click its text to edit it, or reassign or delete it.
+8. **Create a meeting:** **Capture ▾ → Paste transcript** (or **Uploads**, using a file from [`backend/sample_transcripts/`](backend/sample_transcripts)). Notes and action items are generated automatically.
+9. **Edit or delete** a meeting from its **···** menu, **download** a transcript or summary (⬇ in the player bar), and switch to **dark mode** from the avatar menu.
+
+> The live AI runs on Groq's free tier. If you see *"rate limit reached"*, wait a minute. Without an API key the app still works fully and uses rule-based notes instead.
+
+---
+
+## Feature checklist
+
+### Core features
+
+| Requirement | Status | Where |
+|---|:-:|---|
+| **Meetings library:** title, date, duration, participants | ✅ | `/meetings`, grouped by day like Fireflies |
+| Search & filter by title, date, participant; sort by recency | ✅ | Search box, **Filters**, sort menu (newest / oldest / longest) |
+| Navbar with profile / settings | ✅ | Top bar: search, Capture, notifications, profile menu; `/settings` |
+| **Interactive transcript** with speaker labels & timestamps | ✅ | Right panel of the meeting page |
+| Media player area with seek bar | ✅ | Video area + bottom player bar (simulated playback, 0.75×–3×, ±15 s) |
+| Click a line → player seeks, **and vice versa** | ✅ | Active line highlights and auto-scrolls during playback |
+| Search within transcript with highlighted matches | ✅ | *Find in transcript* with match counter and ↑/↓ navigation |
+| **AI summary** | ✅ | General Summary + keywords |
+| **Action items** extracted from the meeting | ✅ | Grouped by assignee, each linked to its timestamp |
+| Key topics / outline / chapters | ✅ | **Notes** section (chapters with timestamped bullets) |
+| **Create** a meeting by upload, paste or form | ✅ | Capture menu; Uploads page (`.txt`, `.vtt`, `.json`, `.srt`) |
+| **Edit** meeting metadata (title, participants) | ✅ | Edit dialog (title, date, participants with emails) |
+| **Delete** a meeting | ✅ | With confirmation; cascades to its transcript, notes and tasks |
+| **Add / edit / complete** action items | ✅ | Inline on the meeting page; also on Home → Tasks |
+| Everything **persists** | ✅ | SQLite on a persistent volume in production |
+| Fireflies look & feel: layout, panels, modals, filters, **toasts**, settings placeholders | ✅ | See [screenshots](#screenshots) |
+
+### Bonus features
+
+| Bonus | Status | Notes |
+|---|:-:|---|
+| LLM "ask a question about this meeting" chat | ✅ | **Ask AI** tab with clickable timestamp citations and follow-up questions |
+| Export transcript or summary | ✅ | TXT, Markdown, JSON (optionally with timestamps) |
+| Global search across all meetings | ✅ | Top-bar search looks inside every transcript |
+| Dark mode | ✅ | Light / dark / system |
+| LLM-generated summaries | ✅ | Any OpenAI-compatible provider; rule-based fallback |
+| Tags / topics filtering | ➖ | Keywords are shown per meeting, not filterable |
+| Comments / highlights / soundbites | ➖ | Not implemented |
+
+### Placeholders ("Coming soon")
+Live meeting bot, real speech-to-text, integrations, team sharing, channels, analytics, AI skills, real authentication (a default user, *Alex Carter*, is always signed in).
+
+---
+
+## Screenshots
+
+| Home | Meetings library |
+|---|---|
+| ![Home](docs/screenshots/home.png) | ![Meetings](docs/screenshots/meetings.png) |
+| **Notes & action items** | **Smart Search** |
+| ![Notes and action items](docs/screenshots/notes-and-actions.png) | ![Smart Search](docs/screenshots/smart-search.png) |
+| **Dark mode** | |
+| ![Dark mode](docs/screenshots/dark-mode.png) | |
+
+---
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js 16 (App Router), TypeScript, Tailwind CSS v4, shadcn/ui (Radix), lucide icons, sonner, next-themes |
+| Backend | Python 3.12, FastAPI, SQLModel (SQLAlchemy + Pydantic), httpx |
+| Database | SQLite |
+| AI (optional) | Any OpenAI-compatible chat API. Live demo: Groq, `openai/gpt-oss-20b` |
+| Testing | pytest (32 API tests; AI tests use a fake provider) |
+| Hosting | Vercel (frontend), Railway with a persistent volume (backend) |
+
+---
+
+## Architecture overview
+
+```mermaid
+flowchart LR
+    U([Browser]) --> FE["Next.js frontend<br/>(Vercel)"]
+    FE -- "REST / JSON" --> API["FastAPI backend<br/>(Railway)"]
+    API --> DB[("SQLite<br/>persistent volume")]
+    API -. "optional" .-> LLM["LLM provider<br/>(OpenAI-compatible)"]
+```
+
+- **Frontend:** pages under `app/`, reusable components under `components/`, and a typed API client (`lib/api.ts`, `lib/types.ts`) mirroring the backend's schemas. The player clock and transcript sync live in `lib/use-player.ts`.
+- **Backend:** layered as routers (HTTP) → services (business logic) → SQLModel models. Services cover transcript parsing, the summarizers (LLM and rule-based), analytics and participant matching.
+- **AI:** optional and isolated in `services/llm.py` and `services/ai.py`. Without a key the app uses the rule-based summarizer.
+- **Data:** seeded on first start, so the app is usable immediately.
+
+<details>
+<summary><b>Repository layout</b></summary>
+
+```
+backend/
+  app/
+    main.py              app setup, CORS, routers
+    models.py            database tables (SQLModel)
+    schemas.py           API request/response models
+    routers/             meetings, action items, AI, misc
+    services/            parsing, summarizers, AI, analytics, business logic
+    seed/                seed data (6 meetings) + loader
+  tests/                 pytest suite
+  sample_transcripts/    example .txt / .vtt / .json uploads
+frontend/
+  src/app/               pages: home, meetings, meeting detail, uploads, settings…
+  src/components/        layout, meetings, meeting (player, transcript, notes, Ask AI), ui
+  src/lib/               API client, types, hooks, formatting, export
+docs/screenshots/
+```
+</details>
+
+---
+
+## Database schema
+
+```mermaid
+erDiagram
+    USERS ||--o{ MEETINGS : owns
+    MEETINGS ||--o{ MEETING_PARTICIPANTS : has
+    PARTICIPANTS ||--o{ MEETING_PARTICIPANTS : attends
+    MEETINGS ||--o{ TRANSCRIPT_SEGMENTS : contains
+    PARTICIPANTS |o--o{ TRANSCRIPT_SEGMENTS : speaks
+    MEETINGS ||--o| SUMMARIES : has
+    MEETINGS ||--o{ NOTE_SECTIONS : has
+    NOTE_SECTIONS ||--o{ NOTE_BULLETS : has
+    MEETINGS ||--o{ ACTION_ITEMS : has
+    PARTICIPANTS |o--o{ ACTION_ITEMS : "assigned to"
+
+    USERS {
+        int id PK
+        string name
+        string email UK
+        string avatar_color
+    }
+    PARTICIPANTS {
+        int id PK
+        string name
+        string email UK "nullable"
+        string avatar_color
+    }
+    MEETINGS {
+        int id PK
+        int owner_id FK
+        string title "indexed"
+        datetime date "indexed"
+        int duration_sec
+        string language
+        string source "seed, upload, paste, form"
+        string platform
+        datetime created_at
+        datetime updated_at
+    }
+    MEETING_PARTICIPANTS {
+        int meeting_id PK, FK
+        int participant_id PK, FK
+        bool is_host
+    }
+    TRANSCRIPT_SEGMENTS {
+        int id PK
+        int meeting_id FK
+        int speaker_id FK "nullable"
+        int seq
+        float start_sec
+        float end_sec
+        string text
+        string sentiment
+        string category "question, task, metric, date, pricing"
+    }
+    SUMMARIES {
+        int id PK
+        int meeting_id FK, UK "one per meeting"
+        json overview "emoji, title, text bullets"
+        json keywords
+        string generated_by "seed, heuristic, ai"
+    }
+    NOTE_SECTIONS {
+        int id PK
+        int meeting_id FK
+        int seq
+        string title
+        string summary
+        float start_sec
+    }
+    NOTE_BULLETS {
+        int id PK
+        int section_id FK
+        int seq
+        string text
+        float start_sec
+    }
+    ACTION_ITEMS {
+        int id PK
+        int meeting_id FK
+        int assignee_id FK "nullable"
+        string text
+        json details "sub-steps"
+        float start_sec "nullable"
+        bool is_completed
+        string source "seed, heuristic, ai, user"
+        datetime created_at
+        datetime updated_at
+    }
+```
+
+- **Relationships:** meetings ↔ participants is many-to-many (`meeting_participants`), which is what makes *filter by participant* possible. A meeting has at most one summary.
+- **Integrity:** deleting a meeting **cascades** to its transcript, summary, notes, action items and participant links. Deleting a participant sets speaker and assignee references to `NULL`, so transcripts and tasks survive. Foreign keys are enforced (`PRAGMA foreign_keys=ON`).
+- **Indexes:** `meetings.date` (sorting), `meetings.title` (search), `transcript_segments (meeting_id, seq)` (ordered reads).
+- **Derived data isn't stored:** speaker talk-time, words per minute and sentiment percentages are computed from transcript segments when requested.
+
+---
+
+## API overview
+
+Base URL: `/api`. Interactive docs are at [`/docs`](https://iceworms-ai-production.up.railway.app/docs).
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/meetings` | List meetings. Query: `q`, `scope` (`title` \| `all` = also search transcripts), `participant_id`, `date_from`, `date_to`, `sort` (`newest` \| `oldest` \| `longest`), `limit`, `offset` |
+| `POST` | `/meetings` | Create a meeting from a form, optionally with a pasted transcript |
+| `POST` | `/meetings/upload` | Create from a transcript file (`.txt`, `.vtt`, `.json`, `.srt`; max 2 MB) |
+| `GET` | `/meetings/{id}` | Meeting with participants, summary, notes and action items |
+| `PATCH` | `/meetings/{id}` | Edit title, date or participants |
+| `DELETE` | `/meetings/{id}` | Delete a meeting and everything in it |
+| `GET` | `/meetings/{id}/transcript` | Transcript lines with speaker, sentiment and category |
+| `GET` | `/meetings/{id}/analytics` | Talk-time and WPM per speaker, sentiment mix, category counts |
+| `POST` | `/meetings/{id}/action-items` | Add an action item |
+| `PATCH` | `/action-items/{id}` | Edit text or assignee, complete or reopen |
+| `DELETE` | `/action-items/{id}` | Delete an action item |
+| `GET` | `/action-items` | Action items across all meetings (Home → Tasks). Query: `completed`, `assignee_id` |
+| `POST` | `/meetings/{id}/summary/regenerate` | Regenerate notes with AI (keeps action items people added, edited or completed) |
+| `POST` | `/meetings/{id}/ask` | Ask about a meeting → `{ answer, citations }` |
+| `GET` | `/ai/status` | Whether AI is configured |
+| `GET` | `/me`, `/stats`, `/participants` | Current user, home-page counts, contacts |
+
+Errors return `{"detail": "..."}` with standard status codes (`404`, `413`, `415`, `422`, and `502` / `503` for AI provider errors or missing AI configuration).
+
+---
+
+## Running locally
+
+**Prerequisites:** Python 3.11+, Node.js 20+
+
+**Backend** (http://localhost:8000)
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate            # Windows: .venv\Scripts\activate
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env                 # Windows: copy .env.example .env  (then add an API key, optional)
+cp .env.example .env               # Windows: copy .env.example .env
 uvicorn app.main:app --reload --port 8000
 ```
-- AI is optional: put `LLM_API_KEY` (and check `LLM_MODEL` / `LLM_BASE_URL`) in `backend/.env` to
-  enable AI notes and Ask AI; see [AI features](#ai-features). Without a key everything else works.
-- The DB (`backend/data/app.db`) is created and **seeded automatically** on first start.
-- Interactive API docs: http://localhost:8000/docs
-- Reset demo data: `python -m app.seed.seed --reset`
-- Run the tests (32 API tests, each on a fresh temporary database; AI tests use a fake provider,
-  so no key or network is needed):
-  ```bash
-  pip install -r requirements-dev.txt
-  python -m pytest -q
-  ```
+The database is created and seeded on first start. To reset the demo data: `python -m app.seed.seed --reset`.
 
-### Frontend (≈2 min)
+**Frontend** (http://localhost:3000)
 ```bash
 cd frontend
 npm install
-cp .env.example .env.local           # Windows: copy .env.example .env.local
-npm run dev                          # http://localhost:3000
-```
-`.env.local` holds `NEXT_PUBLIC_API_URL=http://localhost:8000`. The project was scaffolded with
-`create-next-app` (Next.js 16, Tailwind v4) and shadcn/ui (Radix, Nova preset).
-
-### Try uploads
-Sample files in `backend/sample_transcripts/` cover every supported format
-(`.txt` with timestamps, `.vtt`, `.json`).
-
----
-
-## 2. Architecture
-
-```
-┌──────────────── Next.js (Vercel) ────────────────┐        ┌────────── FastAPI (Railway) ──────────┐
-│ app/ (routes)                                    │        │ routers/   HTTP only: validate, call   │
-│   /            Home feed + stats + tasks         │ fetch  │            service, serialize          │
-│   /meetings    Library: search, filter, sort     │ ─────► │ services/  business logic              │
-│   /meetings/[id]  player · transcript · notes    │  JSON  │   transcript_parser  txt/vtt/json      │
-│ components/   reusable UI (MeetingRow, Player,   │        │   summarizer         heuristic "AI"    │
-│               TranscriptPanel, NotesPanel, …)    │        │   classifier         sentiment/filters │
-│ lib/api.ts    typed client (one fn per endpoint) │        │   analytics          talktime / WPM    │
-│ lib/types.ts  API contract (mirrors schemas.py)  │        │ models.py  SQLModel tables             │
-└──────────────────────────────────────────────────┘        │ schemas.py API request/response shapes │
-                                                            │ seed/      seed_data.json + loader     │
-                                                            └──────────────── SQLite ────────────────┘
+cp .env.example .env.local         # Windows: copy .env.example .env.local
+npm run dev
 ```
 
-### Frontend structure (`frontend/src`)
-```
-app/
-  layout.tsx            fonts, providers, app shell
-  page.tsx              Home: greeting, stats, recent-meeting feed, Tasks tab
-  meetings/page.tsx     Library: search (titles or transcripts), filters, sort, grouped by day
-  meetings/[id]/page.tsx  Meeting: player, summary, notes, action items, transcript
-  uploads/  meeting-status/  settings/   real pages
-  [section]/page.tsx    "Coming soon" placeholders (integrations, analytics, AI skills, team)
-components/
-  layout/    sidebar, top bar (search, Capture menu, theme), floating Ask bar
-  meetings/  meeting row, new / edit / delete dialogs, participants input, dropzone
-  meeting/   player + bottom bar, transcript panel, Smart Search, summary/notes,
-             action items, download dialog, timestamp link
-  home/      cross-meeting tasks list
-  common/    avatars, empty / coming-soon states
-  ui/        shadcn/ui primitives (generated)
-lib/
-  api.ts  types.ts      typed API client + contract mirroring backend/app/schemas.py
-  use-api.ts            fetch hook: race-safe, keeps old data while reloading, optimistic setData
-  use-player.ts         simulated player clock (rAF), seek / skip / speed, keyboard shortcuts
-  export.ts             TXT / Markdown / JSON export of transcript or summary
-  format.ts             time formatting, day grouping, binary search for the active line
-```
-
-**Key decisions**
-- **Thin routers, logic in services.** Routers only validate, call a service and serialize, so
-  the summarizer can be swapped for an LLM without touching the API.
-- **Separate DB models and API schemas.** The table layout can change without breaking clients;
-  `frontend/src/lib/types.ts` mirrors `schemas.py` exactly.
-- **Derived data is computed, not stored.** Speaker talktime, WPM and sentiment percentages come
-  from transcript segments on read, so they can never drift out of sync.
-- **The player clock lives outside React state.** `lib/use-player.ts` is a small store: a
-  `requestAnimationFrame` loop advances the exact time every frame but notifies subscribers ~10×/s,
-  and components subscribe to just the slice they need via `useSyncExternalStore`. The player bar
-  re-renders 10×/s; the rest of the meeting page subscribes to the *active line index* (found by
-  binary search over segment start times), so it re-renders only when the playing line changes.
-  Measured: ~103 → ~10 React commits/s during playback on a 165 Hz display.
-- **One `seek(t)` for everything.** The seek bar, transcript lines, note/action-item timestamps and
-  the ±15s buttons all call the same function; playback highlights the line, so sync works both ways.
-- **People are identified by email, otherwise by name.** Names match case-insensitively; an email
-  given later (e.g. via *Edit meeting*) attaches to a transcript speaker who had none; the same
-  name with a *different* email is a different person. Transcript speakers resolve to the meeting's
-  own participants first (`services/meetings.py: get_or_create_participant`).
-- **The URL holds the library filters** (`/meetings?q=…&participant=…&sort=…`), so the top-bar
-  search deep-links into the library and filtered views can be shared or bookmarked.
-- **Optimistic UI for action items.** Changes appear instantly and roll back with an error toast if
-  the API call fails.
-- **No N+1 queries.** List/detail endpoints eager-load relationships with `selectinload`.
-- **Seed dates are relative** (`days_ago`), so the demo always looks recent.
-
----
-
-## AI features
-
-| Feature | How it works |
-|---|---|
-| **AI notes** | On upload/paste, the whole transcript goes to the LLM, which returns summary bullets, keywords, chapters and action items as JSON. **Generate / Regenerate with AI** does the same for any meeting. |
-| **Ask AI** (per meeting) | Chat in the transcript panel. Answers cite `[mm:ss]` moments; citations are clickable and seek the player. Follow-ups work (recent turns are sent along). |
-| **Fallback** | No key, a timeout, a rate limit or invalid output → rule-based notes are used and the UI says "Basic notes". A failed *regenerate* changes nothing. |
-
-**Setup.** Any OpenAI-compatible provider, via `backend/.env` locally or Railway variables:
+**Tests**
 ```bash
-# Groq (free tier): https://console.groq.com/keys
-LLM_BASE_URL=https://api.groq.com/openai/v1
-LLM_MODEL=openai/gpt-oss-20b
-LLM_API_KEY=gsk_...
-LLM_REASONING_EFFORT=low     # optional; for reasoning models like gpt-oss
-LLM_MAX_TOKENS=4096          # optional; output budget (gpt-oss "thinking" counts toward it)
-
-# Gemini (free tier): https://aistudio.google.com/apikey
-LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
-LLM_MODEL=<a Gemini model name from AI Studio>
-LLM_API_KEY=...
+cd backend
+pip install -r requirements-dev.txt
+python -m pytest -q
 ```
 
-**Design decisions**
-- **No RAG for per-meeting questions.** RAG solves "the material doesn't fit in the model's context".
-  One meeting does fit (an hour is ~10k words), so the whole transcript is sent: simpler, and more
-  accurate because nothing can be missed by retrieval. Answers are still grounded: they must cite
-  timestamps, and the prompt tells the model to say when the transcript doesn't contain the answer.
-  RAG (e.g. SQLite FTS5, then embeddings) would be the right tool for questions *across* meetings.
-- **Provider-agnostic.** `services/llm.py` is plain `httpx` against the OpenAI-compatible
-  `/chat/completions` endpoint, so switching provider is configuration, not code. An optional request
-  field a provider rejects (JSON mode, `reasoning_effort`, `max_completion_tokens`) is dropped and the
-  call retried; empty replies are logged with `finish_reason` and token usage.
-- **Learned from a real failure.** With Groq's default output limit, `gpt-oss` spent its 2048 tokens
-  "thinking" on a longer meeting: JSON mode returned `json_validate_failed` (cut-off JSON) and a
-  retry came back empty. The fix: an explicit output budget plus low reasoning effort, and no blind
-  retries when a reply was cut off (an identical retry hits the same limit and burns rate-limit quota).
-- **Model output is validated, never trusted.** Pydantic schemas check the JSON; strings are
-  length-capped; timestamps are clamped and snapped to real transcript lines; assignees must match a
-  participant (else unassigned), so the model can't invent people or point to nonexistent moments.
-- **Prompt-injection guard.** The transcript is untrusted input: it's fenced in `<transcript>` tags
-  and the system prompt says to treat it as data and ignore instructions inside it.
-- **Regenerating never destroys work.** Each action item has a `source`. Regenerate only replaces
-  auto-generated items nobody touched; items a person added, edited or completed are kept.
-- **No lock held during the model call.** New meetings get their AI notes *before* the database write
-  transaction starts, so a slow model never blocks other writes on SQLite.
-- **Schema change without data loss.** `action_items.source` is added to existing databases on
-  startup (`db.py`), so a local `app.db` or the Railway volume upgrades in place.
+**Environment variables** (backend, all optional locally)
+
+| Variable | Purpose |
+|---|---|
+| `LLM_API_KEY` | Enables AI features. Leave empty to use rule-based notes |
+| `LLM_BASE_URL`, `LLM_MODEL` | Any OpenAI-compatible provider (defaults in `.env.example` are for Groq) |
+| `LLM_REASONING_EFFORT`, `LLM_MAX_TOKENS` | Tuning for reasoning models such as `gpt-oss` |
+| `DATABASE_PATH` | SQLite file location (production: `/data/app.db` on the volume) |
+| `CORS_ORIGINS` | Extra allowed frontend origins (`*.vercel.app` is allowed by default) |
+
+The frontend needs one variable: `NEXT_PUBLIC_API_URL` (the backend URL).
+
+**Transcript formats** for upload or paste: `[00:01:23] Name: text`, `Name: text`, WebVTT, or JSON (`[{"speaker", "start", "end", "text"}]`). Speakers become meeting participants automatically.
 
 ---
 
-## 3. Database schema
+## Deployment
 
-```
-users ──< meetings ──< transcript_segments >── participants
-              │  ├──1 summaries
-              │  ├──< note_sections ──< note_bullets
-              │  ├──< action_items >── participants (assignee)
-              └──< meeting_participants >── participants      (many-to-many)
-```
-
-| Table | Columns | Notes |
+| Part | Platform | Setup |
 |---|---|---|
-| `users` | id, name, email (unique), avatar_color | Single default user (auth is mocked) |
-| `participants` | id, name, email (unique, nullable), avatar_color | People across all meetings ("contacts") |
-| `meetings` | id, owner_id→users, title, date, duration_sec, language, source, platform, created_at, updated_at | Indexed on `date` (sort) and `title` (search) |
-| `meeting_participants` | meeting_id→meetings, participant_id→participants, is_host | Composite PK; enables "filter by participant" |
-| `transcript_segments` | id, meeting_id, speaker_id→participants, seq, start_sec, end_sec, text, sentiment, category | Index `(meeting_id, seq)` for ordered reads |
-| `summaries` | id, meeting_id (**unique**, 1:1), overview JSON, keywords JSON, generated_by | `overview` = `[{emoji, title, text}]` |
-| `note_sections` | id, meeting_id, seq, title, summary, start_sec | The "Notes" outline / chapters |
-| `note_bullets` | id, section_id→note_sections, seq, text, start_sec | Each bullet links to a timestamp |
-| `action_items` | id, meeting_id, assignee_id→participants, text, details JSON, start_sec, is_completed, source, created_at, updated_at | `details` = sub-bullets; `source` = seed / heuristic / ai / user |
+| Backend | **Railway** | Root directory `/backend`, config file `/backend/railway.json`, volume mounted at `/data`, variables `DATABASE_PATH=/data/app.db` plus the `LLM_*` settings |
+| Frontend | **Vercel** | Root directory `frontend`, variable `NEXT_PUBLIC_API_URL=<Railway URL>` |
 
-**Integrity rules**
-- Deleting a meeting **cascades** to its segments, summary, notes, action items and participant links
-  (`ON DELETE CASCADE`; SQLite foreign keys are enabled per connection with `PRAGMA foreign_keys=ON`).
-- Deleting a participant sets `speaker_id` / `assignee_id` to `NULL` (`ON DELETE SET NULL`), so
-  transcripts and tasks survive.
-- All timestamps are stored timezone-aware in UTC.
-- **Why JSON columns** for `overview`, `keywords` and `details`: they're always read and written as
-  a whole with their parent and never queried individually, so separate tables would add joins
-  without benefit.
+Both redeploy automatically on every push to `main`.
 
 ---
 
-## 4. API overview
+## Assumptions & scope
 
-Base URL: `http://localhost:8000` · Full interactive docs at `/docs`.
-
-| Method | Path | Purpose |
-|---|---|---|
-| GET | `/health` | Health check (used by Railway) |
-| GET | `/api/me` | Default logged-in user |
-| GET | `/api/stats` | Home cards: meetings, contacts, open tasks, new tasks (7d) |
-| GET | `/api/participants` | Contacts (participant filter, assignee picker) |
-| GET | `/api/meetings` | List. Query: `q`, `scope=title\|all` (all = also search transcripts), `participant_id`, `date_from`, `date_to`, `sort=newest\|oldest\|longest`, `limit`, `offset` |
-| POST | `/api/meetings` | Create via form, optionally with pasted `transcript_text` |
-| POST | `/api/meetings/upload` | Multipart upload of `.txt` / `.vtt` / `.json` / `.srt` (max 2 MB) |
-| GET | `/api/meetings/{id}` | Detail: participants, summary, notes, action items |
-| PATCH | `/api/meetings/{id}` | Edit title / date / participants (participants replace the list) |
-| DELETE | `/api/meetings/{id}` | Delete meeting and all its content |
-| GET | `/api/meetings/{id}/transcript` | Ordered segments with speaker, sentiment, category |
-| GET | `/api/meetings/{id}/analytics` | Speaker talktime % + WPM, sentiment %, AI-filter counts |
-| GET | `/api/action-items` | Cross-meeting task list. Query: `completed`, `assignee_id` |
-| POST | `/api/meetings/{id}/action-items` | Add action item |
-| PATCH | `/api/action-items/{id}` | Edit text, assignee (`clear_assignee` to unassign), complete |
-| DELETE | `/api/action-items/{id}` | Delete action item |
-| GET | `/api/ai/status` | `{enabled, model}`, so the UI shows or hides AI controls |
-| POST | `/api/meetings/{id}/summary/regenerate` | Rewrite summary, notes and auto-generated action items with the LLM |
-| POST | `/api/meetings/{id}/ask` | `{question, history}` → `{answer, citations}` (answer cites `[mm:ss]`) |
-
-Errors use FastAPI's `{"detail": "..."}` shape with proper status codes
-(404 not found, 413 file too large, 415 wrong file type, 422 validation / unparseable transcript,
-502 AI provider failed, 503 AI not configured).
-
-### Supported transcript formats
-```text
-[00:01:23] Alice: text          01:23 Alice: text          Alice: text   (no timestamps → ~150 wpm estimate)
-```
-```text
-WEBVTT
-00:00:01.000 --> 00:00:04.000
-<v Alice>text
-```
-```json
-[{"speaker": "Alice", "start": 12.5, "end": 15.0, "text": "..."}]
-```
-Transcripts identify speakers **by name only**. Every speaker becomes a participant of the meeting.
-Emails come from the participants form: add "Alice" with an email when creating the meeting (or
-later via *Edit meeting*) and her transcript lines link to that person.
-
----
-
-## 5. Deployment
-
-### Backend → Railway
-1. Push the repo to GitHub (public).
-2. Railway → **New Project → Deploy from GitHub repo**.
-3. Service **Settings**:
-   - **Root Directory:** `/backend`
-   - **Config-as-code path:** `/backend/railway.json` (Railway does not follow the root directory
-     for this file, so the absolute path is required)
-4. **Add a Volume** to the service, mount path **`/data`**.
-5. **Variables:**
-   ```
-   DATABASE_PATH=/data/app.db
-   CORS_ORIGINS=https://<your-app>.vercel.app,http://localhost:3000
-   # optional, enables AI (see backend/.env.example)
-   LLM_BASE_URL=...
-   LLM_MODEL=...
-   LLM_API_KEY=...
-   ```
-6. **Networking → Generate Domain.** Check `https://<backend>.up.railway.app/health`.
-
-`railway.json` already sets the start command, health check, one replica, one worker, no deploy
-overlap (two containers must never write the same SQLite file), and watch paths so frontend-only
-commits don't trigger a backend rebuild.
-
-### Frontend → Vercel
-1. Vercel → **Add New Project** → import the repo → **Root Directory:** `frontend`.
-2. Env var `NEXT_PUBLIC_API_URL=https://<backend>.up.railway.app` (no trailing slash).
-3. Deploy, then put the Vercel URL into Railway's `CORS_ORIGINS`.
-   (`*.vercel.app` preview URLs are already allowed via `CORS_ORIGIN_REGEX`.)
-
-### Staying within the Railway budget
-- **Only the API runs on Railway.** Next.js builds and serves for free on Vercel; the Railway
-  service is one small uvicorn process (roughly 80–120 MB RAM).
-- **One replica, one worker, no `--reload`.** These are set in `railway.json`.
-- **Tiny storage and egress.** The SQLite file is well under 5 MB; uploads are text-only and capped at 2 MB.
-- **Serverless (app sleeping).** Enable it in service settings so the API sleeps when idle; it's
-  safe with a volume. **Turn it off before the evaluation** to avoid a cold start during the demo.
-- **No rebuilds for frontend changes,** thanks to `watchPatterns`.
-- Check **Usage** in the Railway dashboard after the first day to confirm the estimate.
-
----
-
-## 6. Assumptions & scope
-
-- **Auth is mocked.** A single default user (Alex Carter) owns everything; `/api/me` returns them.
-- **No real speech-to-text.** Transcripts are uploaded or pasted. Seeded meetings carry hand-written
-  summaries (one click regenerates them with AI). New transcripts get **LLM notes** when a model is
-  configured; otherwise (or if the call fails) a deterministic summarizer is used: keywords by
-  frequency, notes by time-chunking, and action items from commitment phrases like "I'll", "need to".
-- **Sentiment and AI filters** (questions, tasks, metrics, dates, pricing) come from a small
-  rule-based classifier, applied to every segment at write time.
-- **The media player is simulated.** A clock advances `currentTime` up to the meeting duration,
-  so there are no audio files to host and no length mismatches.
-- **Placeholders ("Coming Soon"):** live meeting bot, real transcription, integrations,
-  team/sharing, AI search *across* meetings, channels, analytics, settings.
-- **Bonus features implemented:** transcript/summary download (TXT / MD / JSON), dark mode,
-  global transcript search (`scope=all`).
+- **No speech-to-text.** Meetings come from seeded data, uploaded transcript files or pasted text, as the assignment allows.
+- **Simulated playback.** There's no audio file; the player runs a clock over the meeting's length, which drives seeking and transcript sync.
+- **AI is optional.** With an API key, notes and Q&A use an LLM. Without one, or if the provider fails, notes come from a rule-based summarizer. Sentiment and transcript categories always come from a lightweight rule-based tagger.
+- **Single default user.** Authentication is mocked; *Alex Carter* is always signed in.
+- **People are matched by email, otherwise by name** (case-insensitive) across meetings.
