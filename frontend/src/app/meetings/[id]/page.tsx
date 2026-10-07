@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, ChevronRight, Download, FileUp, Globe, MoreHorizontal, Pencil, Share2, Trash2, Video } from "lucide-react";
+import { CalendarDays, ChevronRight, Download, FileUp, Globe, MoreHorizontal, Pencil, Share2, Sparkles, Trash2, Video } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -15,6 +15,16 @@ import { NotesSection, SummarySection } from "@/components/meeting/summary-secti
 import { TranscriptPanel } from "@/components/meeting/transcript-panel";
 import { DeleteMeetingDialog } from "@/components/meetings/delete-meeting-dialog";
 import { EditMeetingDialog } from "@/components/meetings/edit-meeting-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -32,22 +42,24 @@ import { useApi } from "@/lib/use-api";
 import { usePlayer, usePlayerState } from "@/lib/use-player";
 
 export default function MeetingPage() {
+  const { id } = useParams<{ id: string }>();
   return (
     <Suspense>
-      <MeetingView />
+      {/* key: a fresh view (player, chat, dialogs) for each meeting, even when navigating between meetings */}
+      <MeetingView key={id} id={Number(id)} />
     </Suspense>
   );
 }
 
-function MeetingView() {
-  const { id: idParam } = useParams<{ id: string }>();
-  const id = Number(idParam);
+function MeetingView({ id }: { id: number }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const { data: meeting, setData: setMeeting, error, loading } = useApi(() => api.getMeeting(id), `meeting-${id}`);
   const { data: segments } = useApi(() => api.getTranscript(id), `transcript-${id}`);
   const { data: analytics } = useApi(() => api.getAnalytics(id), `analytics-${id}`);
+  const { data: ai } = useApi(api.aiStatus, "ai-status");
+  const aiEnabled = ai ? ai.enabled : null; // null while loading
 
   const duration = meeting?.duration_sec ?? 0;
   const player = usePlayer(duration);
@@ -62,6 +74,25 @@ function MeetingView() {
   }
 
   const [editing, setEditing] = useState(false);
+  const [confirmRegen, setConfirmRegen] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
+
+  const openRegenerate = useCallback(() => setConfirmRegen(true), [setConfirmRegen]); // stable: SummarySection is memoised
+
+  async function regenerate() {
+    setRegenerating(true);
+    try {
+      const updated = await api.regenerateNotes(id);
+      setMeeting(updated);
+      toast.success("Notes regenerated with AI", {
+        description: "Action items you added, edited or completed were kept.",
+      });
+    } catch (e) {
+      toast.error("Couldn't regenerate notes", { description: e instanceof Error ? e.message : undefined });
+    } finally {
+      setRegenerating(false);
+    }
+  }
   const [deleting, setDeleting] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
@@ -210,7 +241,12 @@ function MeetingView() {
             </nav>
 
             <div className="space-y-10 pb-10">
-              <SummarySection meeting={meeting} />
+              <SummarySection
+                meeting={meeting}
+                canRegenerate={!!aiEnabled && !!segments?.length}
+                regenerating={regenerating}
+                onRegenerate={openRegenerate}
+              />
               <NotesSection meeting={meeting} onSeek={seek} />
               <ActionItemsSection
                 meetingId={meeting.id}
@@ -225,7 +261,14 @@ function MeetingView() {
 
         {/* right: transcript */}
         <aside className="hidden w-[420px] shrink-0 border-l md:block">
-          <TranscriptPanel segments={segments ?? []} analytics={analytics} activeId={active?.id ?? null} onSeek={seek} />
+          <TranscriptPanel
+            meetingId={meeting.id}
+            segments={segments ?? []}
+            analytics={analytics}
+            activeId={active?.id ?? null}
+            aiEnabled={aiEnabled}
+            onSeek={seek}
+          />
         </aside>
       </div>
 
@@ -240,6 +283,23 @@ function MeetingView() {
         />
       )}
       <DeleteMeetingDialog meeting={meeting} open={deleting} onOpenChange={setDeleting} onDeleted={() => router.push("/meetings")} />
+      <AlertDialog open={confirmRegen} onOpenChange={setConfirmRegen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Regenerate notes with AI?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The summary, notes and auto-generated action items will be rewritten from the transcript. Action items you
+              added, edited or completed are kept.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={regenerate}>
+              <Sparkles /> Regenerate
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <DownloadDialog open={downloading} onOpenChange={setDownloading} meeting={meeting} segments={segments ?? []} />
     </div>
   );

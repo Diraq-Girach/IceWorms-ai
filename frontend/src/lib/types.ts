@@ -54,7 +54,7 @@ export interface MeetingList {
 export interface Summary {
   overview: OverviewBullet[];
   keywords: string[];
-  generated_by: "seed" | "heuristic";
+  generated_by: "seed" | "heuristic" | "ai";
 }
 
 export interface NoteBullet {
@@ -80,6 +80,8 @@ export interface ActionItem {
   start_sec: number | null;
   is_completed: boolean;
   assignee: Participant | null;
+  /** seed | heuristic | ai = auto-generated; user = added or edited by a person */
+  source: "seed" | "heuristic" | "ai" | "user";
   created_at: string;
 }
 
@@ -170,4 +172,20 @@ export interface ActionItemUpdate {
   clear_assignee?: boolean;
   is_completed?: boolean;
   details?: string[];
+}
+
+// ---------- AI ----------
+export interface AIStatus {
+  enabled: boolean;
+  model: string | null;
+}
+
+export interface ChatTurn {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface AskResponse {
+  answer: string;
+  citations: number[]; // seconds referenced as [mm:ss] in the answer
 }

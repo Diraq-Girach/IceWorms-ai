@@ -70,7 +70,11 @@ export function NewMeetingProvider({ children }: { children: React.ReactNode }) 
               transcript_text: mode === "paste" ? text : undefined,
             });
       toast.success("Meeting created", {
-        description: meeting.summary ? "Transcript processed and notes generated." : meeting.title,
+        description: !meeting.summary
+          ? meeting.title
+          : meeting.summary.generated_by === "ai"
+            ? "AI notes and action items are ready."
+            : "Transcript processed and notes generated.",
       });
       setMode(null);
       router.push(`/meetings/${meeting.id}`);
@@ -145,6 +149,9 @@ export function NewMeetingProvider({ children }: { children: React.ReactNode }) 
             </div>
           </Tabs>
 
+          {busy && mode !== "form" && (
+            <p className="text-center text-xs text-muted-foreground">Generating notes from the transcript, this can take a few seconds…</p>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setMode(null)} disabled={busy}>
               Cancel

@@ -7,6 +7,10 @@ import pytest
 _tmp = tempfile.mkdtemp()
 os.environ["DATABASE_PATH"] = os.path.join(_tmp, "test.db")
 os.environ["SEED_ON_STARTUP"] = "false"
+# Tests never call a real AI provider: blank the settings so a key in backend/.env is ignored
+# (python-dotenv doesn't override variables that are already set, even to "")
+for var in ("LLM_API_KEY", "LLM_MODEL", "LLM_BASE_URL"):
+    os.environ[var] = ""
 
 from fastapi.testclient import TestClient  # noqa: E402
 

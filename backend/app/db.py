@@ -30,6 +30,25 @@ def create_db_and_tables() -> None:
     from . import models  # noqa: F401  (register tables on the metadata)
 
     SQLModel.metadata.create_all(engine)
+    _add_missing_columns()
+
+
+# create_all() creates missing tables but never alters existing ones. These are the
+# columns added after the first release, so databases created earlier (a local
+# app.db, a Railway volume) upgrade in place instead of crashing. A project with many
+# migrations would use Alembic; one additive column doesn't justify it yet.
+_ADDED_COLUMNS = {
+    "action_items": {"source": "VARCHAR NOT NULL DEFAULT 'user'"},
+}
+
+
+def _add_missing_columns() -> None:
+    with engine.begin() as conn:
+        for table, columns in _ADDED_COLUMNS.items():
+            existing = {row[1] for row in conn.exec_driver_sql(f"PRAGMA table_info({table})")}
+            for name, ddl in columns.items():
+                if name not in existing:
+                    conn.exec_driver_sql(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}")
 
 
 def get_session() -> Iterator[Session]:

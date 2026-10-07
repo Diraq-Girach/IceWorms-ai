@@ -74,6 +74,10 @@ def update_action_item(item_id: int, body: ActionItemUpdate, session: Session = 
     elif body.assignee_id is not None:
         _check_assignee(session, body.assignee_id)
         item.assignee_id = body.assignee_id
+    # Once a person edits an auto-generated item, it's theirs: "Regenerate with AI" keeps it.
+    # (Ticking the checkbox alone doesn't change ownership; completed items are kept anyway.)
+    if body.text is not None or body.details is not None or body.clear_assignee or body.assignee_id is not None:
+        item.source = "user"
     item.updated_at = utcnow()
     session.add(item)
     session.commit()

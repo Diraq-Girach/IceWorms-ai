@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, Sparkles } from "lucide-react";
+import { Copy, Loader2, Sparkles } from "lucide-react";
 import { memo } from "react";
 import { toast } from "sonner";
 
@@ -20,7 +20,17 @@ export function SectionHeading({ id, icon, title, action }: { id: string; icon?:
 }
 
 /** "General Summary": keywords + emoji overview bullets. */
-export const SummarySection = memo(function SummarySection({ meeting }: { meeting: MeetingDetail }) {
+export const SummarySection = memo(function SummarySection({
+  meeting,
+  canRegenerate,
+  regenerating,
+  onRegenerate,
+}: {
+  meeting: MeetingDetail;
+  canRegenerate: boolean;
+  regenerating: boolean;
+  onRegenerate: () => void;
+}) {
   const s = meeting.summary;
 
   function copy() {
@@ -36,11 +46,29 @@ export const SummarySection = memo(function SummarySection({ meeting }: { meetin
         icon={<Sparkles className="size-4 text-primary" />}
         title="General Summary"
         action={
-          s && (
-            <Button variant="ghost" size="sm" className="h-7 text-muted-foreground" onClick={copy}>
-              <Copy className="size-3.5" /> Copy
-            </Button>
-          )
+          <div className="flex items-center gap-1">
+            {s?.generated_by === "ai" && (
+              <span className="mr-1 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                <Sparkles className="size-3" /> AI-generated
+              </span>
+            )}
+            {s?.generated_by === "heuristic" && (
+              <span className="mr-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground" title="Built with simple rules, without a language model">
+                Basic notes
+              </span>
+            )}
+            {canRegenerate && (
+              <Button variant="ghost" size="sm" className="h-7 text-primary" onClick={onRegenerate} disabled={regenerating}>
+                {regenerating ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
+                {regenerating ? "Generating…" : s?.generated_by === "ai" ? "Regenerate" : "Generate with AI"}
+              </Button>
+            )}
+            {s && (
+              <Button variant="ghost" size="sm" className="h-7 text-muted-foreground" onClick={copy}>
+                <Copy className="size-3.5" /> Copy
+              </Button>
+            )}
+          </div>
         }
       />
       {!s ? (
@@ -69,9 +97,6 @@ export const SummarySection = memo(function SummarySection({ meeting }: { meetin
               </li>
             ))}
           </ul>
-          {s.generated_by === "heuristic" && (
-            <p className="mt-3 text-xs text-muted-foreground">Auto-generated from the uploaded transcript.</p>
-          )}
         </>
       )}
     </section>

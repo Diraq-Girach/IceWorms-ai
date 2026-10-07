@@ -106,7 +106,7 @@ def seed(session: Session) -> None:
             session.add(ActionItem(
                 meeting_id=meeting.id, assignee_id=people[a["assignee"]].id, text=a["text"],
                 details=a.get("details", []), start_sec=a.get("start"), is_completed=a.get("done", False),
-                created_at=date, updated_at=date,
+                created_at=date, updated_at=date, source="seed",
             ))
 
     session.commit()

@@ -88,6 +88,7 @@ class ActionItemOut(BaseModel):
     start_sec: Optional[float] = None
     is_completed: bool
     assignee: Optional[ParticipantOut] = None
+    source: str = "user"  # seed | heuristic | ai | user
     created_at: datetime
 
 
@@ -170,3 +171,24 @@ class StatsOut(BaseModel):
     contacts: int
     open_tasks: int
     new_tasks_7d: int
+
+
+# ---------- AI ----------
+class AIStatus(BaseModel):
+    enabled: bool
+    model: Optional[str] = None
+
+
+class ChatTurn(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=4000)
+
+
+class AskIn(BaseModel):
+    question: str = Field(min_length=1, max_length=1000)
+    history: list[ChatTurn] = Field(default=[], max_length=20)  # earlier turns, for follow-ups
+
+
+class AskOut(BaseModel):
+    answer: str
+    citations: list[float]  # seconds cited as [mm:ss] in the answer

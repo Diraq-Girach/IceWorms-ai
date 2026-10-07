@@ -36,6 +36,7 @@ def action_item_out(a: ActionItem, with_meeting_title: bool = False) -> ActionIt
         start_sec=a.start_sec,
         is_completed=a.is_completed,
         assignee=participant_out(a.assignee) if a.assignee else None,
+        source=a.source,
         created_at=a.created_at,
     )
 

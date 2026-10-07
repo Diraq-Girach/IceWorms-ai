@@ -90,7 +90,9 @@ export type Player = ReturnType<typeof createPlayer>;
 export function usePlayer(duration: number): Player {
   const [player] = useState(createPlayer);
 
-  useEffect(() => player.setDuration(duration), [player, duration]);
+  useEffect(() => {
+    player.setDuration(duration);
+  }, [player, duration]);
   useEffect(() => () => player.destroy(), [player]);
 
   // Keyboard: Space = play/pause, ←/→ = ∓5s (ignored while typing or inside menus/dialogs)

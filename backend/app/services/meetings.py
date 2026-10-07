@@ -1,5 +1,6 @@
 """Business logic for creating/updating meetings (routers stay thin)."""
 import hashlib
+import logging
 import math
 from datetime import datetime
 
@@ -20,9 +21,12 @@ from ..models import (
     utcnow,
 )
 from ..schemas import ParticipantIn
-from . import classifier
-from .summarizer import Line, summarize
+from . import ai, classifier
+from .llm import LLMError, llm_enabled
+from .summarizer import Line, SummaryResult, summarize
 from .transcript_parser import ParsedSegment
+
+log = logging.getLogger("iceworms.meetings")
 
 AVATAR_COLORS = [
     "#F97316", "#7C3AED", "#10B981", "#EC4899", "#3B82F6",
@@ -110,21 +114,10 @@ def create_meeting(
     source: str,
 ) -> Meeting:
     user = get_default_user(session)
-    meeting = Meeting(
-        owner_id=user.id,
-        title=title.strip(),
-        date=as_utc(date) if date else utcnow(),
-        duration_sec=duration_sec or (math.ceil(segments[-1].end) if segments else 0),
-        language=language,
-        source=source,
-        platform="upload" if source == "upload" else "google_meet",
-    )
-    session.add(meeting)
-    session.flush()
+    key = lambda n: n.strip().lower()  # noqa: E731  (names compare case-insensitively)
 
     # Participants = explicitly given ones + every speaker found in the transcript.
     # The default user hosts meetings they create.
-    key = lambda n: n.strip().lower()  # noqa: E731  (names compare case-insensitively)
     names = {key(p.name) for p in participants}
     people = [ParticipantIn(name=user.name, email=user.email)] + [
         p for p in participants if key(p.name) != key(user.name)
@@ -133,6 +126,41 @@ def create_meeting(
         if key(s.speaker) not in names and key(s.speaker) != key(user.name):
             names.add(key(s.speaker))
             people.append(ParticipantIn(name=s.speaker))
+
+    duration = duration_sec or (math.ceil(segments[-1].end) if segments else 0)
+    when = as_utc(date) if date else utcnow()
+
+    # AI notes are generated BEFORE any write, so a slow model call never holds
+    # SQLite's write lock. Any failure falls back to the rule-based summarizer below.
+    ai_notes: SummaryResult | None = None
+    if segments and llm_enabled():
+        display = {}
+        for p in people:
+            display.setdefault(key(p.name), p.name.strip())
+        ctx = ai.MeetingContext(
+            title=title.strip(),
+            date_label=when.strftime("%a %d %b %Y"),
+            duration_sec=duration,
+            participants=list(display.values()),
+            lines=[ai.TranscriptLine(s.start, display.get(key(s.speaker), s.speaker), s.text) for s in segments],
+        )
+        try:
+            ai_notes = ai.generate_notes(ctx)
+        except LLMError as e:
+            log.warning("AI notes failed, using rule-based summary instead: %s", e)
+
+    meeting = Meeting(
+        owner_id=user.id,
+        title=title.strip(),
+        date=when,
+        duration_sec=duration,
+        language=language,
+        source=source,
+        platform="upload" if source == "upload" else "google_meet",
+    )
+    session.add(meeting)
+    session.flush()
+
     attendees = set_participants(session, meeting, people, host_name=user.name)
 
     # Speakers resolve to THIS meeting's attendees first (so "zoe park" in the transcript
@@ -158,20 +186,31 @@ def create_meeting(
         )
         lines.append(Line(speaker.id, speaker.name, s.start, s.text))
 
-    if lines:
-        attach_summary(session, meeting, summarize(lines))
+    if ai_notes:
+        attach_summary(session, meeting, ai_notes, "ai", by_name)
+    elif lines:
+        attach_summary(session, meeting, summarize(lines), "heuristic", by_name)
     session.commit()
     session.refresh(meeting)
     return meeting
 
 
-def attach_summary(session: Session, meeting: Meeting, result) -> None:
+def attach_summary(
+    session: Session,
+    meeting: Meeting,
+    result: SummaryResult,
+    generated_by: str,
+    people_by_name: dict[str, Participant],
+    skip_texts: set[str] = frozenset(),
+) -> None:
+    """Save a summary, its note sections and its action items for `meeting`.
+    Action items whose text is in `skip_texts` (already present) are not duplicated."""
     session.add(
         Summary(
             meeting_id=meeting.id,
             overview=result.overview,
             keywords=result.keywords,
-            generated_by="heuristic",
+            generated_by=generated_by,
         )
     )
     for i, sec in enumerate(result.sections):
@@ -183,4 +222,67 @@ def attach_summary(session: Session, meeting: Meeting, result) -> None:
         for j, b in enumerate(sec["bullets"]):
             session.add(NoteBullet(section_id=ns.id, seq=j, text=b["text"], start_sec=b["start_sec"]))
     for a in result.action_items:
-        session.add(ActionItem(meeting_id=meeting.id, **a))
+        if a["text"].strip().lower() in skip_texts:
+            continue
+        assignee_id = a.get("assignee_id")
+        if assignee_id is None and a.get("assignee_name"):
+            person = people_by_name.get(a["assignee_name"].strip().lower())
+            assignee_id = person.id if person else None
+        session.add(
+            ActionItem(
+                meeting_id=meeting.id,
+                text=a["text"],
+                assignee_id=assignee_id,
+                start_sec=a.get("start_sec"),
+                details=a.get("details", []),
+                source=generated_by,
+            )
+        )
+
+
+# ---------------------------------------------------------------- AI ------------
+
+
+def meeting_context(meeting: Meeting) -> ai.MeetingContext:
+    """Everything the model needs about a saved meeting (read-only)."""
+    return ai.MeetingContext(
+        title=meeting.title,
+        date_label=meeting.date.strftime("%a %d %b %Y"),
+        duration_sec=meeting.duration_sec,
+        participants=[link.participant.name for link in meeting.participant_links],
+        lines=[
+            ai.TranscriptLine(s.start_sec, s.speaker.name if s.speaker else "Unknown", s.text)
+            for s in meeting.segments
+        ],
+    )
+
+
+def regenerate_notes(session: Session, meeting: Meeting) -> Meeting:
+    """Replace a meeting's summary + notes with fresh AI notes.
+
+    Action items people own are kept: anything added or edited by a user (source="user")
+    and anything already completed. Only untouched auto-generated items are replaced.
+    Raises LLMError (before changing anything) if the model call fails.
+    """
+    result = ai.generate_notes(meeting_context(meeting))  # slow part: no writes yet
+
+    if meeting.summary:
+        session.delete(meeting.summary)
+    for section in meeting.note_sections:
+        session.delete(section)  # bullets go with it (cascade)
+    kept = []
+    for item in meeting.action_items:
+        if item.source == "user" or item.is_completed:
+            kept.append(item)
+        else:
+            session.delete(item)
+    session.flush()  # deletes must land before inserts (summaries.meeting_id is unique)
+    session.expire(meeting, ["summary", "note_sections", "action_items"])  # drop references to deleted rows
+
+    by_name = {link.participant.name.strip().lower(): link.participant for link in meeting.participant_links}
+    attach_summary(session, meeting, result, "ai", by_name, skip_texts={k.text.strip().lower() for k in kept})
+    meeting.updated_at = utcnow()
+    session.add(meeting)
+    session.commit()
+    session.refresh(meeting)
+    return meeting

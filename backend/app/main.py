@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -5,7 +6,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import CORS_ORIGIN_REGEX, CORS_ORIGINS, SEED_ON_STARTUP
 from .db import create_db_and_tables
-from .routers import action_items, meetings, misc
+from .routers import action_items, ai, meetings, misc
+
+
+# Show our own log lines (and httpx's one-line "HTTP Request: POST ... 200 OK" per AI call)
+# next to uvicorn's. Uvicorn's loggers don't propagate to root, so nothing is printed twice.
+logging.basicConfig(level=logging.INFO, format="%(levelname)-9s %(name)s - %(message)s")
 
 
 @asynccontextmanager
@@ -36,6 +42,7 @@ app.add_middleware(
 app.include_router(meetings.router)
 app.include_router(action_items.router)
 app.include_router(misc.router)
+app.include_router(ai.router)
 
 
 @app.get("/health", tags=["misc"])

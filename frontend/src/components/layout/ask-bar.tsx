@@ -60,8 +60,9 @@ export function AskBar() {
                 <span className="animate-pulse text-muted-foreground">Understanding…</span>
               ) : (
                 <p className="text-muted-foreground">
-                  AI answers across your meetings are <span className="font-medium text-foreground">coming soon</span>. For
-                  now, use the search bar at the top to find meetings and transcript lines by keyword.
+                  Answers across <em>all</em> your meetings are <span className="font-medium text-foreground">coming soon</span>.
+                  To ask about one meeting, open it and use the <span className="font-medium text-foreground">Ask AI</span> tab next
+                  to the transcript. To find meetings by keyword, use the search bar at the top.
                 </p>
               )}
             </div>

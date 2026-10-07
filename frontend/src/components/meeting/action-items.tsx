@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ListChecks, Plus, Trash2, UserRound } from "lucide-react";
+import { Check, ListChecks, Plus, Sparkles, Trash2, UserRound } from "lucide-react";
 import { memo, useState } from "react";
 import { toast } from "sonner";
 
@@ -81,6 +81,11 @@ function ItemRow({
             {item.text}
           </span>
         )}{" "}
+        {!editing && item.source === "ai" && (
+          <span title="Suggested by AI" aria-label="Suggested by AI" className="mr-0.5 inline-flex align-[-2px]">
+            <Sparkles className="size-3.5 text-primary" />
+          </span>
+        )}
         {!editing && item.start_sec != null && <Timestamp sec={item.start_sec} onSeek={onSeek} />}
         {item.details.length > 0 && (
           <ul className="mt-1 list-[circle] space-y-0.5 pl-5 text-[13px] text-muted-foreground">

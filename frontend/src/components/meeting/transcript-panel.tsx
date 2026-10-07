@@ -10,6 +10,7 @@ import { formatClock, splitMatches } from "@/lib/format";
 import type { Analytics, Segment } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
+import { AskPanel } from "./ask-panel";
 import { SmartSearch, type TranscriptFilter } from "./smart-search";
 
 /** One utterance. Memoised: only re-renders when it becomes (in)active or the search changes. */
@@ -67,14 +68,18 @@ function matchesFilter(s: Segment, f: TranscriptFilter | null) {
  * - Smart Search filters lines by AI category, sentiment or speaker
  */
 export function TranscriptPanel({
+  meetingId,
   segments,
   analytics,
   activeId,
+  aiEnabled,
   onSeek,
 }: {
+  meetingId: number;
   segments: Segment[];
   analytics: Analytics | null;
   activeId: number | null;
+  aiEnabled: boolean | null;
   onSeek: (t: number) => void;
 }) {
   const [tab, setTab] = useState<"transcript" | "ask">("transcript");
@@ -135,11 +140,11 @@ export function TranscriptPanel({
         ))}
       </div>
 
-      {tab === "ask" ? (
-        <EmptyState icon={Bot} title="Ask AI about this meeting">
-          Questions like &ldquo;What were the objections?&rdquo; are coming soon. Use Find and Smart Search on the transcript meanwhile.
-        </EmptyState>
-      ) : (
+      {/* The chat stays mounted (just hidden) so switching tabs doesn't lose the conversation */}
+      <div className={cn("min-h-0 flex-1", tab !== "ask" && "hidden")}>
+        <AskPanel meetingId={meetingId} aiEnabled={aiEnabled} hasTranscript={segments.length > 0} onSeek={onSeek} />
+      </div>
+      {tab === "transcript" && (
         <>
           <div className="flex shrink-0 items-center gap-2 border-b px-3 py-2">
             <label className="flex h-8 flex-1 items-center gap-2 rounded-md border px-2.5 text-sm focus-within:border-primary/50">

@@ -1,9 +1,12 @@
 // Typed API client. One function per endpoint; components never call fetch directly.
 import type {
+  AIStatus,
   ActionItem,
   ActionItemCreate,
   ActionItemUpdate,
   Analytics,
+  AskResponse,
+  ChatTurn,
   MeetingCreate,
   MeetingDetail,
   MeetingList,
@@ -84,4 +87,11 @@ export const api = {
   updateActionItem: (id: number, body: ActionItemUpdate) =>
     request<ActionItem>(`/api/action-items/${id}`, { method: "PATCH", body: json(body) }),
   deleteActionItem: (id: number) => request<void>(`/api/action-items/${id}`, { method: "DELETE" }),
+
+  // AI (503 when the server has no model configured, 502 when the provider fails)
+  aiStatus: () => request<AIStatus>("/api/ai/status"),
+  regenerateNotes: (meetingId: number) =>
+    request<MeetingDetail>(`/api/meetings/${meetingId}/summary/regenerate`, { method: "POST" }),
+  ask: (meetingId: number, question: string, history: ChatTurn[]) =>
+    request<AskResponse>(`/api/meetings/${meetingId}/ask`, { method: "POST", body: json({ question, history }) }),
 };

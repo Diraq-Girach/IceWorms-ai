@@ -37,7 +37,8 @@ class SummaryResult:
     overview: list[dict] = field(default_factory=list)
     keywords: list[str] = field(default_factory=list)
     sections: list[dict] = field(default_factory=list)  # {title, summary, start_sec, bullets:[{text,start_sec}]}
-    action_items: list[dict] = field(default_factory=list)  # {text, assignee_id, start_sec}
+    # {text, start_sec, details?} + either assignee_id (heuristic) or assignee_name (AI, resolved on save)
+    action_items: list[dict] = field(default_factory=list)
 
 
 def _sentences(text: str) -> list[str]:

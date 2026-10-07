@@ -138,7 +138,7 @@ class Summary(SQLModel, table=True):
     # [{"emoji": "📊", "title": "Dashboard Overview", "text": "..."}]
     overview: list[dict] = Field(default_factory=list, sa_column=Column(JSON))
     keywords: list[str] = Field(default_factory=list, sa_column=Column(JSON))
-    generated_by: str = "seed"  # seed | heuristic
+    generated_by: str = "seed"  # seed | heuristic | ai
 
     meeting: Meeting = Relationship(back_populates="summary")
 
@@ -187,6 +187,9 @@ class ActionItem(SQLModel, table=True):
     details: list[str] = Field(default_factory=list, sa_column=Column(JSON))  # sub-bullets
     start_sec: Optional[float] = None  # timestamp link into the transcript
     is_completed: bool = False
+    # Who owns the item: seed | heuristic | ai (auto-generated) or user (added/edited by a person).
+    # "Regenerate with AI" only replaces auto-generated items nobody has touched.
+    source: str = "user"
     created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = Field(default_factory=utcnow)
 
